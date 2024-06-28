@@ -1,17 +1,17 @@
-import { admin } from '../../lib/firebase-admin';
+import { rtdb } from '../../lib/firebase-admin';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const notificationData = req.body;
+    console.log('Received notification data:', notificationData);
 
     try {
-      const database = admin.database();
-      const notificationsRef = database.ref('notifications');
+      const notificationsRef = rtdb.ref('notifications');
       const newNotificationRef = notificationsRef.push();
 
       await newNotificationRef.set({
         ...notificationData,
-        timestamp: admin.database.ServerValue.TIMESTAMP
+        timestamp: rtdb.ServerValue.TIMESTAMP,
       });
 
       console.log('Notification data saved successfully');
