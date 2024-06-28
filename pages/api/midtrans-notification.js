@@ -1,19 +1,17 @@
-// pages/api/midtrans-notification.js
-
-import { rtdb } from '../../lib/firebase-admin';
+import { admin } from '../../lib/firebase-admin';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const notificationData = req.body;
-    console.log('Received notification data:', notificationData);
 
     try {
-      const notificationsRef = rtdb.ref('notifications');
+      const database = admin.database();
+      const notificationsRef = database.ref('notifications');
       const newNotificationRef = notificationsRef.push();
 
       await newNotificationRef.set({
         ...notificationData,
-        timestamp: rtdb.ServerValue.TIMESTAMP,
+        timestamp: admin.database.ServerValue.TIMESTAMP
       });
 
       console.log('Notification data saved successfully');
