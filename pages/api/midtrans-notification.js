@@ -7,15 +7,30 @@ export default async function handler(req, res) {
     try {
       const database = admin.database();
       const notificationsRef = database.ref('notifications');
-      const newNotificationRef = notificationsRef.push();
 
-      await newNotificationRef.set({
-        ...notificationData,
-        timestamp: admin.database.ServerValue.TIMESTAMP
-      });
+      // Gunakan order_id sebagai kunci data
+      const orderId = notificationData.order_id;
+      const notificationRef = notificationsRef.child(orderId);
 
-      console.log('Notification data saved successfully');
-      res.status(200).json({ message: 'Notification received and saved successfully' });
+      // Cek apakah data sudah ada
+      const snapshot = await notificationRef.once('value');
+      if (snapshot.exists()) {
+        // Jika data sudah ada, lakukan update
+        await notificationRef.update({
+          ...notificationData,
+          timestamp: admin.database.ServerValue.TIMESTAMP
+        });
+        console.log(`Notification data for order_id ${orderId} updated successfully`);
+      } else {
+        // Jika data belum ada, buat data baru
+        await notificationRef.set({
+          ...notificationData,
+          timestamp: admin.database.ServerValue.TIMESTAMP
+        });
+        console.log(`Notification data for order_id ${orderId} saved successfully`);
+      }
+
+      res.status(200).json({ message: 'Notification received and processed successfully' });
     } catch (error) {
       console.error('Error saving notification data:', error);
       res.status(500).json({ error: 'Failed to save notification data' });
